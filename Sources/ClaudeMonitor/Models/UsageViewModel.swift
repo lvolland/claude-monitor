@@ -1,4 +1,5 @@
 import Foundation
+import ServiceManagement
 import SwiftUI
 
 @MainActor
@@ -14,29 +15,33 @@ final class UsageViewModel: ObservableObject {
     @AppStorage("refreshInterval") var refreshInterval: Double = 300 // 5 min
     @AppStorage("showPercentInMenuBar") var showPercentInMenuBar = false
 
-    private var timer: Timer?
-    private let api = ClaudeAPIService.shared
-
-    var cookie: String? {
-        get { KeychainService.get(key: "sessionCookie") }
+    var launchAtLogin: Bool {
+        get { SMAppService.mainApp.status == .enabled }
         set {
-            if let v = newValue, !v.isEmpty {
-                KeychainService.save(key: "sessionCookie", value: v)
-            } else {
-                KeychainService.delete(key: "sessionCookie")
+            objectWillChange.send()
+            do {
+                if newValue {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                print("Launch at login error: \(error)")
             }
         }
     }
 
+    private var timer: Timer?
+    private let api = ClaudeAPIService.shared
+
+    var cookie: String? {
+        get { UserDefaults.standard.string(forKey: "sessionCookie") }
+        set { UserDefaults.standard.set(newValue, forKey: "sessionCookie") }
+    }
+
     var orgId: String? {
-        get { KeychainService.get(key: "orgId") }
-        set {
-            if let v = newValue, !v.isEmpty {
-                KeychainService.save(key: "orgId", value: v)
-            } else {
-                KeychainService.delete(key: "orgId")
-            }
-        }
+        get { UserDefaults.standard.string(forKey: "orgId") }
+        set { UserDefaults.standard.set(newValue, forKey: "orgId") }
     }
 
     var menuBarStatus: String? {
@@ -147,10 +152,9 @@ final class UsageViewModel: ObservableObject {
 
     private func startTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            Task { @MainActor in
-                await self.refresh()
+        timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { _ in
+            Task { @MainActor [weak self] in
+                await self?.refresh()
             }
         }
     }

@@ -48,6 +48,12 @@ struct SettingsView: View {
 
             Toggle("Show status in menu bar", isOn: $vm.showPercentInMenuBar)
                 .font(.subheadline)
+
+            Toggle("Launch at login", isOn: Binding(
+                get: { vm.launchAtLogin },
+                set: { vm.launchAtLogin = $0 }
+            ))
+            .font(.subheadline)
         }
         .padding(12)
     }
@@ -72,7 +78,8 @@ struct SettingsView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
+                .tint(.blue)
                 .controlSize(.large)
 
                 // Secondary: manual option
@@ -80,8 +87,7 @@ struct SettingsView: View {
                     showManual = true
                 }
                 .font(.caption)
-                .foregroundStyle(.secondary)
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
                 .frame(maxWidth: .infinity)
             }
         }
@@ -135,6 +141,7 @@ struct SettingsView: View {
                 saveError = nil
                 showManual = false
             }
+            .buttonStyle(.glass)
             .font(.caption)
             .controlSize(.small)
         }
@@ -198,8 +205,7 @@ struct SettingsView: View {
                     showManual = false
                 }
                 .font(.caption)
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+                .buttonStyle(.glass)
 
                 Spacer()
 
@@ -214,7 +220,8 @@ struct SettingsView: View {
                         Text(isSaving ? "Connecting..." : "Connect")
                     }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
+                .tint(.blue)
                 .controlSize(.regular)
                 .disabled(cookieInput.isEmpty || orgIdInput.isEmpty || isSaving)
             }

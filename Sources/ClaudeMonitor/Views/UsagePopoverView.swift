@@ -5,19 +5,23 @@ struct UsagePopoverView: View {
     @State private var showSettings = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            header
-            Divider()
+        GlassEffectContainer {
+            VStack(alignment: .leading, spacing: 12) {
+                header
 
-            if showSettings {
-                SettingsView(vm: vm, isPresented: $showSettings)
-            } else if !vm.isConfigured {
-                setupPrompt
-            } else if let error = vm.error {
-                errorView(error)
-            } else {
-                usageContent
+                if showSettings {
+                    SettingsView(vm: vm, isPresented: $showSettings)
+                } else if !vm.isConfigured {
+                    setupPrompt
+                } else if let error = vm.error {
+                    errorView(error)
+                } else {
+                    usageContent
+                }
+
+                footer
             }
+            .padding(14)
         }
         .frame(width: 320)
     }
@@ -35,52 +39,50 @@ struct UsagePopoverView: View {
 
             if !showSettings, let plan = vm.orgInfo?.planName {
                 Text(plan)
-                    .font(.caption)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.blue.opacity(0.2))
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(.blue)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(.blue.opacity(0.15))
                     .clipShape(Capsule())
             }
 
             Button(action: { showSettings.toggle() }) {
                 Image(systemName: showSettings ? "xmark" : "gearshape")
-                    .foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.glass)
 
             if !showSettings {
                 Button(action: { Task { await vm.refresh() } }) {
                     Image(systemName: vm.isLoading ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
-                        .foregroundStyle(.secondary)
                         .rotationEffect(.degrees(vm.isLoading ? 360 : 0))
                         .animation(vm.isLoading ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: vm.isLoading)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
                 .disabled(vm.isLoading)
             }
         }
-        .padding(12)
     }
 
     // MARK: - Usage Content
 
     private var usageContent: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 10) {
+            // Current Session
             if let session = vm.usage?.fiveHour {
-                usageSection(
+                usageCard(
                     title: "Current Session",
                     utilization: session.utilization,
                     subtitle: vm.sessionResetText,
                     color: barColor(for: session.utilization)
                 )
-                Divider()
             }
 
+            // Weekly Limits
             if vm.usage?.sevenDay != nil || vm.usage?.sevenDaySonnet != nil {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Weekly Limits")
-                        .font(.subheadline)
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
 
                     if let all = vm.usage?.sevenDay {
@@ -102,13 +104,14 @@ struct UsagePopoverView: View {
                     }
                 }
                 .padding(12)
-                Divider()
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
 
+            // Extra Usage
             if let extra = vm.usage?.extraUsage, extra.isEnabled {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Extra Usage")
-                        .font(.subheadline)
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
 
                     usageBar(
@@ -128,30 +131,29 @@ struct UsagePopoverView: View {
                             if bal.autoReloadSettings == nil {
                                 Text("Auto-reload off")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.tertiary)
                             }
                         }
                         .font(.caption)
                     }
                 }
                 .padding(12)
-                Divider()
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
-
-            footer
         }
     }
 
     // MARK: - Components
 
-    private func usageSection(title: String, utilization: Double, subtitle: String, color: Color) -> some View {
+    private func usageCard(title: String, utilization: Double, subtitle: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.subheadline)
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
             usageBar(label: nil, utilization: utilization, subtitle: subtitle, color: color)
         }
         .padding(12)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private func usageBar(label: String?, utilization: Double, subtitle: String, color: Color) -> some View {
@@ -165,16 +167,16 @@ struct UsagePopoverView: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.gray.opacity(0.2))
+                            .fill(.white.opacity(0.1))
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(color)
+                            .fill(color.gradient)
                             .frame(width: max(geo.size.width * utilization / 100, 4))
                     }
                 }
                 .frame(height: 8)
 
                 Text("\(Int(utilization))%")
-                    .font(.caption)
+                    .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(width: 36, alignment: .trailing)
             }
@@ -193,6 +195,12 @@ struct UsagePopoverView: View {
                     .foregroundStyle(.tertiary)
             }
             Spacer()
+            Text("by lvolland")
+                .font(.system(size: 9))
+                .foregroundStyle(.quaternary)
+            Text("·")
+                .font(.system(size: 9))
+                .foregroundStyle(.quaternary)
             Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }
@@ -200,13 +208,12 @@ struct UsagePopoverView: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
         }
-        .padding(12)
     }
 
     // MARK: - States
 
     private var setupPrompt: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             Image(systemName: "key.fill")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
@@ -215,10 +222,12 @@ struct UsagePopoverView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             Button("Setup") { showSettings = true }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
+                .tint(.blue)
         }
         .frame(maxWidth: .infinity)
         .padding(24)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private func errorView(_ message: String) -> some View {
@@ -232,13 +241,14 @@ struct UsagePopoverView: View {
                 .multilineTextAlignment(.center)
             HStack {
                 Button("Retry") { Task { await vm.refresh() } }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                 Button("Settings") { showSettings = true }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(24)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private func barColor(for utilization: Double) -> Color {
