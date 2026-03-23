@@ -47,22 +47,22 @@ A lightweight macOS menu bar app that displays your [Claude](https://claude.ai) 
 
 ## Install
 
+### Homebrew (recommended)
+
+```bash
+brew tap lvolland/tap
+brew install --cask claude-monitor
+```
+
 ### From source
 
 ```bash
-git clone git@github.com:lvolland/claude-monitor.git
+git clone https://github.com/lvolland/claude-monitor.git
 cd claude-monitor
 swift build -c release
-cp .build/release/ClaudeMonitor /usr/local/bin/
 ```
 
-### With Xcode
-
-```bash
-cd claude-monitor
-open Package.swift
-# Cmd+R to build and run
-```
+Then move the built binary to `/Applications` or run directly with `swift run`.
 
 ## Setup
 
