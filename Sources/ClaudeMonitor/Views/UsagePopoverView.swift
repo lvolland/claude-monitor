@@ -116,7 +116,7 @@ struct UsagePopoverView: View {
 
                     usageBar(
                         label: "\(vm.currencySymbol)\(extra.usedCreditsFormatted) / \(vm.currencySymbol)\(extra.monthlyLimitFormatted)",
-                        utilization: extra.utilization,
+                        utilization: extra.effectiveUtilization,
                         subtitle: vm.extraUsageResetText,
                         color: .orange
                     )
@@ -239,6 +239,38 @@ struct UsagePopoverView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+
+            if let debugLog = vm.debugLog {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("API Response")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(debugLog, forType: .string)
+                        } label: {
+                            Label("Copy", systemImage: "doc.on.doc")
+                                .font(.caption2)
+                        }
+                        .buttonStyle(.glass)
+                    }
+
+                    ScrollView {
+                        Text(debugLog)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(maxHeight: 120)
+                }
+                .padding(8)
+                .background(.white.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
             HStack {
                 Button("Retry") { Task { await vm.refresh() } }
                     .buttonStyle(.glassProminent)

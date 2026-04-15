@@ -9,6 +9,7 @@ final class UsageViewModel: ObservableObject {
     @Published var orgInfo: OrganizationInfo?
     @Published var isLoading = false
     @Published var error: String?
+    @Published var debugLog: String?
     @Published var lastUpdated: Date?
     @Published var isConfigured = false
 
@@ -105,6 +106,7 @@ final class UsageViewModel: ObservableObject {
 
         isLoading = true
         error = nil
+        debugLog = nil
 
         do {
             async let u = api.fetchUsage(orgId: orgId, cookie: cookie)
@@ -117,6 +119,7 @@ final class UsageViewModel: ObservableObject {
             lastUpdated = Date()
         } catch let e as APIError {
             error = e.errorDescription
+            debugLog = e.responseBody
         } catch {
             self.error = error.localizedDescription
         }
@@ -145,6 +148,7 @@ final class UsageViewModel: ObservableObject {
         orgInfo = nil
         isConfigured = false
         error = nil
+        debugLog = nil
         lastUpdated = nil
     }
 

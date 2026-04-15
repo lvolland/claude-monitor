@@ -24,7 +24,7 @@ struct UsageResponse: Codable {
 
 struct UsageEntry: Codable {
     let utilization: Double
-    let resetsAt: String
+    let resetsAt: String?
 
     enum CodingKeys: String, CodingKey {
         case utilization
@@ -32,6 +32,7 @@ struct UsageEntry: Codable {
     }
 
     var resetDate: Date? {
+        guard let resetsAt else { return nil }
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter.date(from: resetsAt)
@@ -42,13 +43,19 @@ struct ExtraUsage: Codable {
     let isEnabled: Bool
     let monthlyLimit: Int
     let usedCredits: Double
-    let utilization: Double
+    let utilization: Double?
 
     enum CodingKeys: String, CodingKey {
         case isEnabled = "is_enabled"
         case monthlyLimit = "monthly_limit"
         case usedCredits = "used_credits"
         case utilization
+    }
+
+    var effectiveUtilization: Double {
+        if let utilization { return utilization }
+        guard monthlyLimit > 0 else { return 0 }
+        return (usedCredits / Double(monthlyLimit)) * 100
     }
 
     var monthlyLimitFormatted: String {

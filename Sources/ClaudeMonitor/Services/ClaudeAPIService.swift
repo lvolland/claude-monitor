@@ -6,7 +6,7 @@ enum APIError: LocalizedError {
     case unauthorized
     case networkError(Error)
     case decodingError(Error, String)
-    case httpError(Int)
+    case httpError(Int, String)
 
     var errorDescription: String? {
         switch self {
@@ -15,7 +15,15 @@ enum APIError: LocalizedError {
         case .unauthorized: return "Session expired — update your cookie"
         case .networkError(let e): return "Network: \(e.localizedDescription)"
         case .decodingError(_, let body): return "Unexpected API response: \(body.prefix(200))"
-        case .httpError(let code): return "HTTP \(code)"
+        case .httpError(let code, _): return "HTTP \(code)"
+        }
+    }
+
+    var responseBody: String? {
+        switch self {
+        case .decodingError(_, let body): return body
+        case .httpError(_, let body): return body.isEmpty ? nil : body
+        default: return nil
         }
     }
 }
@@ -166,7 +174,8 @@ actor ClaudeAPIService {
         }
 
         guard (200...299).contains(http.statusCode) else {
-            throw APIError.httpError(http.statusCode)
+            let body = String(data: data, encoding: .utf8) ?? "<binary>"
+            throw APIError.httpError(http.statusCode, body)
         }
 
         return (data, http)
