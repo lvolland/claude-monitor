@@ -41,7 +41,7 @@ struct UsageEntry: Codable {
 
 struct ExtraUsage: Codable {
     let isEnabled: Bool
-    let monthlyLimit: Int
+    let monthlyLimit: Int?
     let usedCredits: Double
     let utilization: Double?
 
@@ -54,12 +54,12 @@ struct ExtraUsage: Codable {
 
     var effectiveUtilization: Double {
         if let utilization { return utilization }
-        guard monthlyLimit > 0 else { return 0 }
+        guard let monthlyLimit, monthlyLimit > 0 else { return 0 }
         return (usedCredits / Double(monthlyLimit)) * 100
     }
 
-    var monthlyLimitFormatted: String {
-        formatCents(monthlyLimit)
+    var monthlyLimitFormatted: String? {
+        monthlyLimit.map(formatCents)
     }
 
     var usedCreditsFormatted: String {

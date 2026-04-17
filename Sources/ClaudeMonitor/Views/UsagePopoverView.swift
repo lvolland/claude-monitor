@@ -115,7 +115,9 @@ struct UsagePopoverView: View {
                         .foregroundStyle(.secondary)
 
                     usageBar(
-                        label: "\(vm.currencySymbol)\(extra.usedCreditsFormatted) / \(vm.currencySymbol)\(extra.monthlyLimitFormatted)",
+                        label: extra.monthlyLimitFormatted
+                            .map { "\(vm.currencySymbol)\(extra.usedCreditsFormatted) / \(vm.currencySymbol)\($0)" }
+                            ?? "\(vm.currencySymbol)\(extra.usedCreditsFormatted)",
                         utilization: extra.effectiveUtilization,
                         subtitle: vm.extraUsageResetText,
                         color: .orange
