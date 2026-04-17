@@ -115,10 +115,8 @@ struct UsagePopoverView: View {
                         .foregroundStyle(.secondary)
 
                     usageBar(
-                        label: extra.monthlyLimitFormatted
-                            .map { "\(vm.currencySymbol)\(extra.usedCreditsFormatted) / \(vm.currencySymbol)\($0)" }
-                            ?? "\(vm.currencySymbol)\(extra.usedCreditsFormatted)",
-                        utilization: extra.effectiveUtilization,
+                        label: vm.extraUsageLabel,
+                        utilization: vm.extraUsageUtilization,
                         subtitle: vm.extraUsageResetText,
                         color: .orange
                     )
@@ -130,7 +128,7 @@ struct UsagePopoverView: View {
                             Text("\(vm.currencySymbol)\(bal.amountFormatted)")
                                 .fontWeight(.medium)
                             Spacer()
-                            if bal.autoReloadSettings == nil {
+                            if !vm.autoReloadEnabled {
                                 Text("Auto-reload off")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)

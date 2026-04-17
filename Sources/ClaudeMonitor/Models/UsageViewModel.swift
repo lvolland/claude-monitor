@@ -47,9 +47,20 @@ final class UsageViewModel: ObservableObject {
 
     var menuBarStatus: String? {
         guard showPercentInMenuBar, let session = usage?.fiveHour else { return nil }
-        let pct = Int(session.utilization)
         let time = shortTimeUntil(session.resetDate)
+        if inExtraUsage {
+            return "\(extraUsageLabel) · \(time)"
+        }
+        let pct = Int(session.utilization)
         return "\(pct)% · \(time)"
+    }
+
+    /// True when the 5-hour quota is exhausted and the user is consuming
+    /// extra (prepaid) credits right now.
+    var inExtraUsage: Bool {
+        guard let extra = usage?.extraUsage, extra.isEnabled else { return false }
+        guard let util = usage?.fiveHour?.utilization else { return false }
+        return util >= 100
     }
 
     var sessionResetText: String {
@@ -81,6 +92,41 @@ final class UsageViewModel: ObservableObject {
 
     var currencySymbol: String {
         credits?.currency == "EUR" ? "€" : "$"
+    }
+
+    var autoReloadEnabled: Bool {
+        credits?.autoReloadSettings?.enabled == true
+    }
+
+    /// Utilization % for the Extra Usage bar. Falls back to the prepaid
+    /// balance when there's no monthly cap and auto-reload is off.
+    var extraUsageUtilization: Double {
+        guard let extra = usage?.extraUsage else { return 0 }
+        if let util = extra.utilization { return util }
+        if let limit = extra.monthlyLimit, limit > 0 {
+            return (extra.usedCredits / Double(limit)) * 100
+        }
+        if !autoReloadEnabled, let balance = credits?.amount {
+            let total = extra.usedCredits + Double(balance)
+            guard total > 0 else { return 0 }
+            return (extra.usedCredits / total) * 100
+        }
+        return 0
+    }
+
+    /// Label above the Extra Usage bar.
+    var extraUsageLabel: String {
+        guard let extra = usage?.extraUsage else { return "" }
+        let used = "\(currencySymbol)\(extra.usedCreditsFormatted)"
+        if let fmt = extra.monthlyLimitFormatted {
+            return "\(used) / \(currencySymbol)\(fmt)"
+        }
+        if !autoReloadEnabled, let balance = credits?.amount {
+            let total = Int(extra.usedCredits) + balance
+            let totalFmt = String(format: "%.2f", Double(total) / 100.0)
+            return "\(used) / \(currencySymbol)\(totalFmt)"
+        }
+        return used
     }
 
     // MARK: - Lifecycle

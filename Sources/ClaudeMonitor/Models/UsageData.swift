@@ -52,12 +52,6 @@ struct ExtraUsage: Codable {
         case utilization
     }
 
-    var effectiveUtilization: Double {
-        if let utilization { return utilization }
-        guard let monthlyLimit, monthlyLimit > 0 else { return 0 }
-        return (usedCredits / Double(monthlyLimit)) * 100
-    }
-
     var monthlyLimitFormatted: String? {
         monthlyLimit.map(formatCents)
     }
