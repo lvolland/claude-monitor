@@ -102,6 +102,15 @@ struct UsagePopoverView: View {
                             color: barColor(for: sonnet.utilization)
                         )
                     }
+
+                    if let design = vm.usage?.sevenDayDesign {
+                        usageBar(
+                            label: "Claude Design",
+                            utilization: design.utilization,
+                            subtitle: vm.designResetText,
+                            color: barColor(for: design.utilization)
+                        )
+                    }
                 }
                 .padding(12)
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
