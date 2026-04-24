@@ -7,6 +7,7 @@ struct UsageResponse: Codable {
     let sevenDay: UsageEntry?
     let sevenDayOpus: UsageEntry?
     let sevenDaySonnet: UsageEntry?
+    let sevenDayDesign: UsageEntry?
     let sevenDayCowork: UsageEntry?
     let sevenDayOauthApps: UsageEntry?
     let extraUsage: ExtraUsage?
@@ -16,6 +17,7 @@ struct UsageResponse: Codable {
         case sevenDay = "seven_day"
         case sevenDayOpus = "seven_day_opus"
         case sevenDaySonnet = "seven_day_sonnet"
+        case sevenDayDesign = "seven_day_omelette"
         case sevenDayCowork = "seven_day_cowork"
         case sevenDayOauthApps = "seven_day_oauth_apps"
         case extraUsage = "extra_usage"
