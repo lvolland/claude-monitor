@@ -7,6 +7,7 @@ final class UsageViewModel: ObservableObject {
     @Published var usage: UsageResponse?
     @Published var credits: PrepaidCredits?
     @Published var orgInfo: OrganizationInfo?
+    @Published var routineBudget: RoutineBudget?
     @Published var isLoading = false
     @Published var error: String?
     @Published var debugLog: String?
@@ -75,6 +76,11 @@ final class UsageViewModel: ObservableObject {
 
     var sonnetResetText: String {
         guard let date = usage?.sevenDaySonnet?.resetDate else { return "" }
+        return resetDateText(date)
+    }
+
+    var designResetText: String {
+        guard let date = usage?.sevenDayDesign?.resetDate else { return "" }
         return resetDateText(date)
     }
 
@@ -158,10 +164,12 @@ final class UsageViewModel: ObservableObject {
             async let u = api.fetchUsage(orgId: orgId, cookie: cookie)
             async let c = api.fetchCredits(orgId: orgId, cookie: cookie)
             async let o = api.fetchOrgInfo(orgId: orgId, cookie: cookie)
+            async let r = api.fetchRoutineBudget(cookie: cookie)
 
             usage = try await u
             credits = try await c
             orgInfo = try await o
+            routineBudget = try? await r
             lastUpdated = Date()
         } catch let e as APIError {
             error = e.errorDescription
@@ -192,6 +200,7 @@ final class UsageViewModel: ObservableObject {
         usage = nil
         credits = nil
         orgInfo = nil
+        routineBudget = nil
         isConfigured = false
         error = nil
         debugLog = nil
