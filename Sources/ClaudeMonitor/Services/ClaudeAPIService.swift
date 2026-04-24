@@ -58,6 +58,10 @@ actor ClaudeAPIService {
         try await request("/api/organizations/\(orgId)", cookie: cookie)
     }
 
+    func fetchRoutineBudget(cookie: String) async throws -> RoutineBudget {
+        try await request("/v1/code/routines/run-budget", cookie: cookie)
+    }
+
     /// Try multiple strategies to discover the org UUID
     func discoverOrgId(cookie: String) async throws -> String {
         // Strategy 1: /api/organizations/discoverable (might be array or wrapped)
