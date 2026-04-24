@@ -62,7 +62,11 @@ actor ClaudeAPIService {
         try await request(
             "/v1/code/routines/run-budget",
             cookie: cookie,
-            extraHeaders: ["x-organization-uuid": orgId, "anthropic-beta": "ccr-triggers-2026-01-30"]
+            extraHeaders: [
+                "x-organization-uuid": orgId,
+                "anthropic-beta": "ccr-triggers-2026-01-30",
+                "anthropic-version": "2023-06-01"
+            ]
         )
     }
 
