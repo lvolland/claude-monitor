@@ -2,6 +2,18 @@ import Foundation
 import ServiceManagement
 import SwiftUI
 
+private let monthDayFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateFormat = "MMM d"
+    return f
+}()
+
+private let weekdayTimeFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateFormat = "EEE h:mm a"
+    return f
+}()
+
 @MainActor
 final class UsageViewModel: ObservableObject {
     @Published var usage: UsageResponse?
@@ -91,9 +103,7 @@ final class UsageViewModel: ObservableObject {
         guard let nextMonth = cal.date(byAdding: .month, value: 1, to: cal.startOfDay(for: now)) else { return "" }
         let comp = cal.dateComponents([.year, .month], from: nextMonth)
         guard let resetDate = cal.date(from: comp) else { return "" }
-        let fmt = DateFormatter()
-        fmt.dateFormat = "MMM d"
-        return "Resets \(fmt.string(from: resetDate))"
+        return "Resets \(monthDayFormatter.string(from: resetDate))"
     }
 
     var currencySymbol: String {
@@ -211,11 +221,13 @@ final class UsageViewModel: ObservableObject {
 
     private func startTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { _ in
+        let t = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { _ in
             Task { @MainActor [weak self] in
                 await self?.refresh()
             }
         }
+        t.tolerance = max(refreshInterval * 0.1, 30)
+        timer = t
     }
 
     // MARK: - Helpers
@@ -244,8 +256,6 @@ final class UsageViewModel: ObservableObject {
     }
 
     private func resetDateText(_ date: Date) -> String {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "EEE h:mm a"
-        return "Resets \(fmt.string(from: date))"
+        "Resets \(weekdayTimeFormatter.string(from: date))"
     }
 }

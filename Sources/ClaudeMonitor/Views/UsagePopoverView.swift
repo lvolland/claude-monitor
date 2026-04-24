@@ -1,5 +1,11 @@
 import SwiftUI
 
+private let updatedFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.timeStyle = .short
+    return f
+}()
+
 struct UsagePopoverView: View {
     @ObservedObject var vm: UsageViewModel
     @State private var showSettings = false
@@ -54,9 +60,12 @@ struct UsagePopoverView: View {
 
             if !showSettings {
                 Button(action: { Task { await vm.refresh() } }) {
-                    Image(systemName: vm.isLoading ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
-                        .rotationEffect(.degrees(vm.isLoading ? 360 : 0))
-                        .animation(vm.isLoading ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: vm.isLoading)
+                    if vm.isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
                 }
                 .buttonStyle(.glass)
                 .disabled(vm.isLoading)
@@ -224,7 +233,7 @@ struct UsagePopoverView: View {
     private var footer: some View {
         HStack {
             if let date = vm.lastUpdated {
-                Text("Updated \(date, style: .relative) ago")
+                Text("Updated \(updatedFormatter.string(from: date))")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
