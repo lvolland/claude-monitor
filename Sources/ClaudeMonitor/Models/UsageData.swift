@@ -63,6 +63,26 @@ struct ExtraUsage: Codable {
     }
 }
 
+// MARK: - GET /v1/code/routines/run-budget
+
+struct RoutineBudget: Codable {
+    let limit: String
+    let used: String
+    let unifiedBillingEnabled: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case limit, used
+        case unifiedBillingEnabled = "unified_billing_enabled"
+    }
+
+    var limitInt: Int { Int(limit) ?? 0 }
+    var usedInt: Int { Int(used) ?? 0 }
+    var utilization: Double {
+        guard limitInt > 0 else { return 0 }
+        return min(Double(usedInt) / Double(limitInt) * 100, 100)
+    }
+}
+
 // MARK: - GET /api/organizations/{org}/prepaid/credits
 
 struct PrepaidCredits: Codable {
