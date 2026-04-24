@@ -156,7 +156,13 @@ struct UsagePopoverView: View {
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private func usageBar(label: String?, utilization: Double, subtitle: String, color: Color) -> some View {
+    private func usageBar(
+        label: String?,
+        utilization: Double,
+        subtitle: String,
+        color: Color,
+        valueText: String? = nil
+    ) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             if let label {
                 Text(label)
@@ -175,10 +181,10 @@ struct UsagePopoverView: View {
                 }
                 .frame(height: 8)
 
-                Text("\(Int(utilization))%")
+                Text(valueText ?? "\(Int(utilization))%")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .frame(width: 36, alignment: .trailing)
+                    .frame(width: 48, alignment: .trailing)
             }
 
             Text(subtitle)
