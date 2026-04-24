@@ -327,8 +327,8 @@ struct UsagePopoverView: View {
     }
 
     private func barColor(for utilization: Double) -> Color {
-        if utilization >= 80 { return .red }
-        if utilization >= 50 { return .orange }
+        if utilization >= 100.0 * 5 / 6 { return .red }
+        if utilization >= 100.0 * 2 / 3 { return .orange }
         return .blue
     }
 }
