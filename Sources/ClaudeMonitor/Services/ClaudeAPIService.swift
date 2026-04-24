@@ -30,7 +30,7 @@ enum APIError: LocalizedError {
 
 actor ClaudeAPIService {
     static let shared = ClaudeAPIService()
-    private let baseURL = "https://claude.ai/api"
+    private let baseURL = "https://claude.ai"
     private let session: URLSession
 
     private init() {
@@ -43,19 +43,19 @@ actor ClaudeAPIService {
     // MARK: - Public API
 
     func fetchUsage(orgId: String, cookie: String) async throws -> UsageResponse {
-        try await request("/organizations/\(orgId)/usage", cookie: cookie)
+        try await request("/api/organizations/\(orgId)/usage", cookie: cookie)
     }
 
     func fetchCredits(orgId: String, cookie: String) async throws -> PrepaidCredits {
-        try await request("/organizations/\(orgId)/prepaid/credits", cookie: cookie)
+        try await request("/api/organizations/\(orgId)/prepaid/credits", cookie: cookie)
     }
 
     func fetchSubscription(orgId: String, cookie: String) async throws -> SubscriptionDetails {
-        try await request("/organizations/\(orgId)/subscription_details", cookie: cookie)
+        try await request("/api/organizations/\(orgId)/subscription_details", cookie: cookie)
     }
 
     func fetchOrgInfo(orgId: String, cookie: String) async throws -> OrganizationInfo {
-        try await request("/organizations/\(orgId)", cookie: cookie)
+        try await request("/api/organizations/\(orgId)", cookie: cookie)
     }
 
     /// Try multiple strategies to discover the org UUID
@@ -71,7 +71,7 @@ actor ClaudeAPIService {
         }
 
         // Strategy 3: raw fetch /api/organizations/discoverable and inspect
-        let rawBody = try await rawRequest("/organizations/discoverable", cookie: cookie)
+        let rawBody = try await rawRequest("/api/organizations/discoverable", cookie: cookie)
         throw APIError.decodingError(
             DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Unknown format")),
             rawBody
@@ -82,7 +82,7 @@ actor ClaudeAPIService {
 
     private func discoverViaDiscoverable(cookie: String) async throws -> String {
         // Try as plain array
-        if let orgs: [DiscoverableOrg] = try? await request("/organizations/discoverable", cookie: cookie) {
+        if let orgs: [DiscoverableOrg] = try? await request("/api/organizations/discoverable", cookie: cookie) {
             if let first = orgs.first { return first.uuid }
         }
 
@@ -91,7 +91,7 @@ actor ClaudeAPIService {
             let organizations: [DiscoverableOrg]?
             let data: [DiscoverableOrg]?
         }
-        if let wrapped: WrappedOrgs = try? await request("/organizations/discoverable", cookie: cookie) {
+        if let wrapped: WrappedOrgs = try? await request("/api/organizations/discoverable", cookie: cookie) {
             if let first = (wrapped.organizations ?? wrapped.data)?.first {
                 return first.uuid
             }
@@ -119,7 +119,7 @@ actor ClaudeAPIService {
             }
         }
 
-        let profile: AccountProfile = try await request("/account_profile", cookie: cookie)
+        let profile: AccountProfile = try await request("/api/account_profile", cookie: cookie)
 
         // Try memberships at top level
         if let orgId = profile.memberships?.first?.organization?.uuid {
