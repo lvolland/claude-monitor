@@ -58,8 +58,12 @@ actor ClaudeAPIService {
         try await request("/api/organizations/\(orgId)", cookie: cookie)
     }
 
-    func fetchRoutineBudget(cookie: String) async throws -> RoutineBudget {
-        try await request("/v1/code/routines/run-budget", cookie: cookie)
+    func fetchRoutineBudget(orgId: String, cookie: String) async throws -> RoutineBudget {
+        try await request(
+            "/v1/code/routines/run-budget",
+            cookie: cookie,
+            extraHeaders: ["x-organization-uuid": orgId]
+        )
     }
 
     /// Try multiple strategies to discover the org UUID
@@ -140,8 +144,12 @@ actor ClaudeAPIService {
 
     // MARK: - Private
 
-    private func request<T: Decodable>(_ path: String, cookie: String) async throws -> T {
-        let (data, _) = try await rawData(path, cookie: cookie)
+    private func request<T: Decodable>(
+        _ path: String,
+        cookie: String,
+        extraHeaders: [String: String]? = nil
+    ) async throws -> T {
+        let (data, _) = try await rawData(path, cookie: cookie, extraHeaders: extraHeaders)
         do {
             return try JSONDecoder().decode(T.self, from: data)
         } catch {
@@ -155,12 +163,22 @@ actor ClaudeAPIService {
         return String(data: data, encoding: .utf8) ?? "<binary>"
     }
 
-    private func rawData(_ path: String, cookie: String) async throws -> (Data, HTTPURLResponse) {
+    private func rawData(
+        _ path: String,
+        cookie: String,
+        extraHeaders: [String: String]? = nil
+    ) async throws -> (Data, HTTPURLResponse) {
         let url = URL(string: baseURL + path)!
         var req = URLRequest(url: url)
         req.setValue(cookie, forHTTPHeaderField: "Cookie")
         req.setValue("*/*", forHTTPHeaderField: "Accept")
         req.setValue("web_claude_ai", forHTTPHeaderField: "anthropic-client-platform")
+
+        if let extraHeaders {
+            for (k, v) in extraHeaders {
+                req.setValue(v, forHTTPHeaderField: k)
+            }
+        }
 
         let (data, response): (Data, URLResponse)
         do {

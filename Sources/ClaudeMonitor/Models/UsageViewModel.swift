@@ -164,7 +164,7 @@ final class UsageViewModel: ObservableObject {
             async let u = api.fetchUsage(orgId: orgId, cookie: cookie)
             async let c = api.fetchCredits(orgId: orgId, cookie: cookie)
             async let o = api.fetchOrgInfo(orgId: orgId, cookie: cookie)
-            async let r = api.fetchRoutineBudget(cookie: cookie)
+            async let r = api.fetchRoutineBudget(orgId: orgId, cookie: cookie)
 
             usage = try await u
             credits = try await c
