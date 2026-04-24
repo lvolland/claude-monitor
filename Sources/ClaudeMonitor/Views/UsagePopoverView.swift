@@ -116,6 +116,25 @@ struct UsagePopoverView: View {
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
 
+            // Routines
+            if let routines = vm.routineBudget, routines.limitInt > 0 {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Routines")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+
+                    usageBar(
+                        label: "Daily included runs",
+                        utilization: routines.utilization,
+                        subtitle: "Rolling 24 hours",
+                        color: barColor(for: routines.utilization),
+                        valueText: "\(routines.usedInt) / \(routines.limitInt)"
+                    )
+                }
+                .padding(12)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+            }
+
             // Extra Usage
             if let extra = vm.usage?.extraUsage, extra.isEnabled {
                 VStack(alignment: .leading, spacing: 8) {
